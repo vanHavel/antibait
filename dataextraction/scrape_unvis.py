@@ -4,6 +4,7 @@ This script scrapes unv.is urls for article titles and texts
 
 import logging
 from pathlib import Path
+from time import sleep
 from typing import List
 
 import requests
@@ -11,18 +12,21 @@ from bs4 import BeautifulSoup
 from ftfy import fix_text
 
 SCRAPED_DATA_DIR_PATH = Path('data', 'scraped')
-URL_FILE_PATH = Path('data', 'urls.txt')
+URL_FILE_PATH = Path('data', 'unvis_urls.txt')
 
 
 def scrape_unvis_urls() -> None:
     urls = read_urls_from_file(URL_FILE_PATH)
     for index, url in enumerate(urls):
-        logger.info(f'Processing {url}...')
-        page_content = get_html_content(url)
-        title, text = extract_title_and_text(page_content)
-        cleaned_text = clean_text(text)
-        sample_filename = str(index) + '.txt'
-        write_article_to_file(title, cleaned_text, url, sample_filename)
+        try:
+            logger.info(f'Processing {url}...')
+            page_content = get_html_content(url)
+            title, text = extract_title_and_text(page_content)
+            cleaned_text = clean_text(text)
+            sample_filename = str(index) + '.txt'
+            write_article_to_file(title, cleaned_text, url, sample_filename)
+        except Exception as exc:
+            logger.info(f'Failed processing {url} with {exc}')
 
 
 def read_urls_from_file(url_file_path: Path) -> List[str]:
@@ -33,6 +37,9 @@ def read_urls_from_file(url_file_path: Path) -> List[str]:
 
 
 def get_html_content(url: str) -> str:
+    response = requests.get(url)
+    response.raise_for_status()
+    sleep(10)
     response = requests.get(url)
     response.raise_for_status()
     return response.content
