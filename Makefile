@@ -1,5 +1,5 @@
 init:
-	mkdir -p data/raw
+	mkdir -p data/scraped
 
-clear-raw-data:
-	rm -rf data/raw/*
+clear-scraped-data:
+	rm -rf data/scraped/*
